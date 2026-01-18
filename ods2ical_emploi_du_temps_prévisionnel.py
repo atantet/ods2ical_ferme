@@ -1,14 +1,11 @@
 from icalendar import Calendar, Event
+import numpy as np
 import pandas as pd
 from pathlib import Path
 from sys import argv
 from zoneinfo import ZoneInfo
 
-def display(cal):
-    return cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip()
-
 TZINFO = ZoneInfo("Europe/Paris")
-START_HOUR = 8
 JOUR_NUM = {
     "Lundi": 1,
     "Mardi": 2,
@@ -18,6 +15,31 @@ JOUR_NUM = {
     "Samedi": 6,
     "Dimanche": 7
 }
+START_HOURS = {
+    "Administratif": (9, 0),
+    "Préparation marché bio": (9, 0),
+    "Cultures": (9, 0),
+    "Préparation boulange": (12, 0),
+    "Pépinière": (9, 0),
+    "Pain": (5, 30),
+    "Récoltes marché bio (1/2) + marché Pontorson": (8, 30),
+    "Chargement marché bio (1/2)": (8, 30),
+    "Chargement marché Pontorson": (8, 30),
+    "Marché bio": (14, 45),
+    "Marché Pontorson": (6, 30),
+    "Récolte marché Rocabey + AMAP": (9, 0),
+    "Chargement marché Rocabey jeudi": (14, 30),
+    "Chargement AMAP": (9, 0),
+    "AMAP": (17, 0),
+    "Marché Rocabey jeudi": (5, 15),
+    "Récolte marché à la ferme + marché Rocabey": (8, 30),
+    "Préparation marché à la ferme": (8, 30),
+    "Préparation marché Rocabey samedi": (8, 30),
+    "Marché à la ferme": (16,30),
+    "Chargement marché Rocabey samedi": (8, 30),
+    "Marché Rocabey samedi": (5, 15)
+}
+    
 COLORS = {
     'Alexis': "black",
     'Christophe': "green",
@@ -34,57 +56,119 @@ COLORS = {
 }
 CATEGORIES = ["Professionnel"]
 
-ODS_FILEPATH = Path("..", "emploi_du_temps_prévisionnel_paire.ods")
-INDEX_COL = [0, 1]
-USECOLS = range(14)
-SKIPROWS = [1]
+READ_EXCEL_KWARGS = dict(
+    index_col=[0, 1],
+    usecols=range(14),
+    skiprows=[1]
+)
 
 YEAR = 2026
 
-df = pd.read_excel(
-    ODS_FILEPATH,
-    index_col=INDEX_COL, usecols=USECOLS, skiprows=SKIPROWS
-)
-week = pd.read_excel(ODS_FILEPATH, usecols=[0], nrows=1).squeeze()
+def main():
+    ics_root = Path(argv[-1])
 
-for num, (name, df_name) in enumerate(df.items()):
-    ICS_FILEPATH = Path(ODS_FILEPATH.parent, 
-                        ODS_FILEPATH.stem + "_" + name + ".ics")
-    cal = Calendar()
-    cal.color = COLORS[name]
+    # Get calendars
+    all_calendars = {}
+    for ods_filepath in argv[1:-1]:
+        file_calendars = get_calendars_from_file(ods_filepath)
+        for name, cal in file_calendars.items():
+            if name not in all_calendars:
+                all_calendars[name] = []
+            all_calendars[name].append(cal)
 
-    for jour, df_new in df_name.groupby(level=0):
-        df_name_jour = df_new.droplevel(0)
+    merged_calendars = {}
+    for name, cals in all_calendars.items():
+        # Merge calendars
+        merged_cal = merge_calendars(cals)
+        merged_calendars[name] = merged_cal
 
-        duration = pd.Timedelta(hours=df_name_jour.sum())
+        # Print people calendar
+        print('\n', name, ":")
+        print(display(merged_cal))
 
-        if duration.value > 0:
-            date = pd.Timestamp.fromisocalendar(YEAR, week, JOUR_NUM[jour])
-            start = pd.Timestamp(date.year, date.month, date.day,
-                                 START_HOUR, tzinfo=TZINFO)
-            end = start + duration
-            summary = ", ".join(
-                [f"{atelier} ({int(heures)})"
-                 for atelier, heures in df_name_jour.items() if heures > 0]
-            )
-            description = "\n".join(
-                [f"- {atelier}: {int(heures)} h"
-                 for atelier, heures in df_name_jour.items() if heures > 0]
-            )
+        # Write people calendar
+        ics_filepath = Path(
+            ics_root.parent, f"{ics_root.stem}_{name}.ics")
+        f = open(ics_filepath, 'wb')
+        f.write(merged_cal.to_ical())
+        f.close()
 
-            event = Event()
-            event.color = COLORS[name]
-            event.categories = CATEGORIES
-            event.start = start
-            event.end = end
-            event["summary"] = summary
-            event["description"] = description
+def get_calendars_from_file(
+        ods_filepath, read_excel_kwargs=READ_EXCEL_KWARGS, year=YEAR,
+        tzinfo=TZINFO, start_hours=START_HOURS, colors=COLORS,
+        categories=CATEGORIES):
+    """Get calendar from file."""
+    df = pd.read_excel(ods_filepath, **read_excel_kwargs)
+    week = pd.read_excel(ods_filepath, usecols=[0], nrows=1).squeeze()
 
-            cal.add_component(event)
-            
-    print('\n', name, ":")
-    print(display(cal))
+    calendars = {}
+    for num, (name, df_name) in enumerate(df.items()):
+        cal_name = Calendar()
+        cal_name.color = colors[name]
 
-    f = open(ICS_FILEPATH, 'wb')
-    f.write(cal.to_ical())
-    f.close()
+        for jour, df_new in df_name.groupby(level=0):
+            df_name_jour = df_new.droplevel(0)
+
+            duration = pd.Timedelta(hours=df_name_jour.sum())
+
+            if duration.value > 0:
+                date = pd.Timestamp.fromisocalendar(
+                    year, week, JOUR_NUM[jour])
+                start_hour = get_start_hour(df_name_jour, start_hours)
+                start = pd.Timestamp(date.year, date.month, date.day,
+                                     *start_hour, tzinfo=tzinfo)
+                end = start + duration
+                summary = ", ".join(
+                    [f"{atelier} ({int(heures)})"
+                     for atelier, heures in df_name_jour.items()
+                     if heures > 0]
+                )
+                description = "\n".join(
+                    [f"- {atelier}: {int(heures)} h"
+                     for atelier, heures in df_name_jour.items()
+                     if heures > 0]
+                )
+
+                event = Event()
+                event.color = colors[name]
+                event.categories = categories
+                event.start = start
+                event.end = end
+                event["summary"] = summary
+                event["description"] = description
+
+                cal_name.add_component(event)
+        
+        calendars[name] = cal_name
+
+    return calendars
+
+def merge_calendars(cals):
+    """Merge calendars."""
+    merged_cal = Calendar()
+
+    for cal in cals:
+        for component in cal.walk():
+            if component.name != "VCALENDAR":
+                merged_cal.add_component(component)
+
+    return merged_cal
+
+def display(cal):
+    """Display calendar."""
+    return cal.to_ical().decode("utf-8").replace('\r\n', '\n').strip()
+
+def get_start_hour(df_name_jour, start_hours):
+    """Get start hour."""
+    start_minutes = np.min([
+        start_hours[atelier][0] * 60 + start_hours[atelier][1]
+        for atelier, heures in df_name_jour.items()
+        if heures > 0
+    ])
+    start_hour = (start_minutes // 60, np.mod(start_minutes, 60))
+
+    return start_hour
+
+if __name__ == "__main__":
+    main()
+
