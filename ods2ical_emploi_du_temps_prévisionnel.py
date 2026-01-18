@@ -1,6 +1,7 @@
 from icalendar import Calendar, Event
 import pandas as pd
 from pathlib import Path
+from sys import argv
 from zoneinfo import ZoneInfo
 
 def display(cal):
@@ -33,23 +34,22 @@ COLORS = {
 }
 CATEGORIES = ["Professionnel"]
 
-ODS_FILEPATH = Path("emploi_du_temps_prévisionnel.ods")
-SHEET_NAME = "Semaine paire"
+ODS_FILEPATH = Path("..", "emploi_du_temps_prévisionnel_paire.ods")
 INDEX_COL = [0, 1]
 USECOLS = range(14)
 SKIPROWS = [1]
 
 YEAR = 2026
-WEEK = 2
-
 
 df = pd.read_excel(
-    ODS_FILEPATH, sheet_name=SHEET_NAME,
+    ODS_FILEPATH,
     index_col=INDEX_COL, usecols=USECOLS, skiprows=SKIPROWS
 )
+week = pd.read_excel(ODS_FILEPATH, usecols=[0], nrows=1).squeeze()
 
 for num, (name, df_name) in enumerate(df.items()):
-    ICS_FILEPATH = Path(ODS_FILEPATH.stem + "_" + name + ".ics")
+    ICS_FILEPATH = Path(ODS_FILEPATH.parent, 
+                        ODS_FILEPATH.stem + "_" + name + ".ics")
     cal = Calendar()
     cal.color = COLORS[name]
 
@@ -59,7 +59,7 @@ for num, (name, df_name) in enumerate(df.items()):
         duration = pd.Timedelta(hours=df_name_jour.sum())
 
         if duration.value > 0:
-            date = pd.Timestamp.fromisocalendar(YEAR, WEEK, JOUR_NUM[jour])
+            date = pd.Timestamp.fromisocalendar(YEAR, week, JOUR_NUM[jour])
             start = pd.Timestamp(date.year, date.month, date.day,
                                  START_HOUR, tzinfo=TZINFO)
             end = start + duration
