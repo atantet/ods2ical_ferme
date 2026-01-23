@@ -10,41 +10,56 @@ from zoneinfo import ZoneInfo
 
 TZINFO = ZoneInfo("Europe/Paris")
 JOUR_NUM = {
-    "Lundi": 1,
-    "Mardi": 2,
-    "Mercredi": 3,
-    "Jeudi": 4,
-    "Vendredi": 5,
-    "Samedi": 6,
-    "Dimanche": 7
+    "LUNDI": 1,
+    "MARDI": 2,
+    "MERCREDI": 3,
+    "JEUDI": 4,
+    "VENDREDI": 5,
+    "SAMEDI": 6,
+    "DIMANCHE": 7
 }
 START_HOURS = {
-    "Administratif": (9, 0),
-    "Préparation marché bio": (9, 0),
+    "administratif": (9, 0),
+    "administratif+autres": (9, 0),
+    "divers": (9, 0),
+    "Divers": (9, 0),
+    "(récoltes)": (9, 0),
+    "prépa marché bio": (9, 0),
     "Cultures": (9, 0),
-    "Préparation boulange": (12, 0),
+    "prépa pain": (12, 0),
     "Pépinière": (9, 0),
-    "Pain": (5, 30),
-    "Récoltes marché bio (1/2) + marché Pontorson": (8, 30),
-    "Chargement marché bio (1/2)": (8, 30),
-    "Chargement marché Pontorson": (8, 30),
-    "Marché bio": (14, 45),
-    "Marché Pontorson": (6, 30),
-    "Récolte marché Rocabey + AMAP": (9, 0),
-    "Chargement marché Rocabey jeudi": (14, 30),
-    "Chargement AMAP": (9, 0),
-    "AMAP": (17, 0),
-    "Marché Rocabey jeudi": (5, 15),
-    "Récolte marché à la ferme + marché Rocabey": (8, 30),
-    "Préparation marché à la ferme": (8, 30),
+    "pain ou administratif": (5, 30),
+    "pain": (5, 30),
+    "récoltes Marchés": (8, 30),
+    "récolte (MB) + M": (8, 30),
+    "betteraves": (8, 30),
+    "chargement Mbio": (8, 30),
+    "chargement Mpon": (9, 0),
+    "crgt Mpon et rocabey": (9, 0),
+    "marché bio (Mbio)": (14, 45),
+    "retour Mbio administratif": (14, 45),
+    "retour Mbio": (14, 45),
+    "marché pontorson (Mpon)": (6, 30),
+    "Déchargement (Mpon)": (14, 30),
+    "Déchargement Mbio": (9, 0),
+    "récolte Mroc et amap": (9, 0),
+    "chargement Mroc + com": (14, 30),
+    "chargement amap": (9, 0),
+    "amap": (17, 0),
+    "marché Rocabey (Mroc)": (5, 15),
+    "Déchargement amap": (9, 0),
+    "(récolte) divers": (9, 0),
+    "récolte Mferme + Mroc": (8, 30),
+    "prépa yourte": (8, 30),
     "Préparation marché Rocabey samedi": (8, 30),
-    "Marché à la ferme": (16,30),
-    "Chargement marché Rocabey samedi": (8, 30),
-    "Marché Rocabey samedi": (5, 15)
+    "marché à la ferme (Mroc)": (16,30),
+    "chargement Mroc": (8, 30),
+    "marché Rocabey": (5, 15),
+    "Aller, chrgt, retour Mroc et déchargement ": (5, 15)
 }
     
 COLORS = {
-    'Alexis': "black",
+    'Alexis': "blue",
     'Christophe': "green",
     'Lalo': "red",
     'Marie': "fuchsia",
@@ -52,8 +67,16 @@ COLORS = {
     'Mylène': "yellow",
     'Mathieu V': "maroon",
     'Jérôme': "olive",
-    'Isabelle': "lime",
+    'Isa': "lime",
     'Seydou': "navy",
+    'Léandre': "teal",
+    'Clothilde': "aqua",
+    'Clément': "teal",
+    'Elsa': "aqua",
+    'Liam': "teal",
+    'Josepha': "aqua",
+    'Gwendal': "teal",
+    "E’ouann": "aqua",
     'Aide 1': "teal",
     'Aide 2': "aqua"
 }
@@ -61,8 +84,7 @@ CATEGORIES = ["Professionnel"]
 
 READ_EXCEL_KWARGS = dict(
     index_col=[0, 1],
-    usecols=range(14),
-    skiprows=[1]
+    usecols=[0, 2] + np.arange(5, 23).tolist()
 )
 
 YEAR = 2026
@@ -70,14 +92,7 @@ YEAR = 2026
 def main():
     ics_root = Path(argv[-1])
 
-    # Get calendars
-    all_calendars = {}
-    for ods_filepath in argv[1:-1]:
-        file_calendars = get_calendars_from_file(ods_filepath)
-        for name, cal in file_calendars.items():
-            if name not in all_calendars:
-                all_calendars[name] = []
-            all_calendars[name].append(cal)
+    all_calendars = get_calendars_from_file(argv[1])
 
     merged_calendars = {}
     for name, cals in all_calendars.items():
@@ -96,15 +111,44 @@ def main():
         f.write(merged_cal.to_ical())
         f.close()
 
+    return
+
+
 def get_calendars_from_file(
         ods_filepath, read_excel_kwargs=READ_EXCEL_KWARGS, year=YEAR,
         tzinfo=TZINFO, start_hours=START_HOURS, colors=COLORS,
         categories=CATEGORIES):
-    """Get calendar from file."""
-    df = pd.read_excel(ods_filepath, **read_excel_kwargs)
-    week = pd.read_excel(ods_filepath, usecols=[0], nrows=1).squeeze()
+    """Get calendars for different weeks from sheets of ODS file."""
+    d = pd.read_excel(ods_filepath, sheet_name=None, **read_excel_kwargs)
 
+    # Get calendars
+    all_calendars = {}
+    for sheet_name, df0 in d.items():
+        file_calendars = get_calendars_from_frame(
+            df0, year=YEAR,
+            tzinfo=TZINFO, start_hours=START_HOURS, colors=COLORS,
+            categories=CATEGORIES)
+
+        for name, cal in file_calendars.items():
+            if name not in all_calendars:
+                all_calendars[name] = []
+            all_calendars[name].append(cal)
+
+    return all_calendars
+
+def get_calendars_from_frame(
+        df0, year=YEAR,
+        tzinfo=TZINFO, start_hours=START_HOURS, colors=COLORS,
+        categories=CATEGORIES, week_row=0):
+    """Get calendar from file."""
     calendars = {}
+    
+    week = df0.index[week_row][0]
+    df = df0.drop(labels=df0.index[week_row])
+
+    # Vérification de la qualité
+    df = df.where(df != 'o', 0)
+
     for num, (name, df_name) in enumerate(df.items()):
         cal_name = Calendar()
         cal_name.color = colors[name]
@@ -116,7 +160,7 @@ def get_calendars_from_file(
 
             if duration.value > 0:
                 date = pd.Timestamp.fromisocalendar(
-                    year, week, JOUR_NUM[jour])
+                    year, week, JOUR_NUM[jour.strip(" ")])
                 start_hour = get_start_hour(df_name_jour, start_hours)
                 start = pd.Timestamp(date.year, date.month, date.day,
                                      *start_hour, tzinfo=tzinfo)
