@@ -1,12 +1,13 @@
 """
 python ods2ical_emploi_du_temps_prévisionnel.py ../emploi_du_temps_prévisionnel_paire.ods ../emploi_du_temps_prévisionnel_impaire.ods ../test.ics
 """
-from icalendar import Calendar, Event
+from icalendar import Calendar, Event, Timezone
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sys import argv
 from zoneinfo import ZoneInfo
+
 
 TZINFO = ZoneInfo("Europe/Paris")
 JOUR_NUM = {
@@ -159,12 +160,14 @@ def get_calendars_from_frame(
             duration = pd.Timedelta(hours=df_name_jour.sum())
 
             if duration.value > 0:
+                dtstamp = pd.Timestamp.now(tz=tzinfo)
+                uid = f'{week}/{name}/{jour}/{dtstamp}'
                 date = pd.Timestamp.fromisocalendar(
                     year, week, JOUR_NUM[jour.strip(" ")])
                 start_hour = get_start_hour(df_name_jour, start_hours)
-                start = pd.Timestamp(date.year, date.month, date.day,
-                                     *start_hour, tzinfo=tzinfo)
-                end = start + duration
+                dtstart = pd.Timestamp(date.year, date.month, date.day,
+                                       *start_hour, tzinfo=tzinfo)
+                dtend = dtstart + duration
                 summary = ", ".join(
                     [f"{atelier} ({int(heures)})"
                      for atelier, heures in df_name_jour.items()
@@ -175,16 +178,21 @@ def get_calendars_from_frame(
                      for atelier, heures in df_name_jour.items()
                      if heures > 0]
                 )
+                color = colors[name]
 
-                event = Event()
-                event.color = colors[name]
-                event.categories = categories
-                event.start = start
-                event.end = end
-                event["summary"] = summary
-                event["description"] = description
+                event = Event(uid=uid)
+                
+                event.add('dtstamp', dtstamp)
+                event.add('dtstart', dtstart)
+                event.add('dtend', dtend)
+                event.add('summary', summary)
+                event.add('description', description)
+                event.add('categories', categories)
+                event.add('color', color)
 
                 cal_name.add_component(event)
+
+        cal_name.add_missing_timezones()
         
         calendars[name] = cal_name
 
@@ -193,6 +201,10 @@ def get_calendars_from_frame(
 def merge_calendars(cals):
     """Merge calendars."""
     merged_cal = Calendar()
+
+    # Some properties are required to be compliant.
+    merged_cal.add('prodid', '-//atantet//ods2ical_christophe/')
+    merged_cal.add('version', '2.0')
 
     for cal in cals:
         for component in cal.walk():
