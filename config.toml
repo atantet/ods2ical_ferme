@@ -1,0 +1,21 @@
+[source]
+ods_filepath = "../2026_PLANING.ods"
+year = 2026
+week_row = 0
+
+[destination]
+ics_root = "../2026_PLANING"
+
+[calendar]
+prodid = "-//atantet//ods2ical_christophe/"
+timezone = "Europe/Paris"
+version = "2.0"
+
+[events]
+categories = [ "Professionnel" ]
+
+[operations]
+start_hours = { "administratif" = [ 9, 0 ], "administratif+autres" = [ 9, 0 ], "divers" = [ 9, 0 ], "Divers" = [ 9, 0 ], "[récoltes]" = [ 9, 0 ], "prépa marché bio" = [ 9, 0 ], "Cultures" = [ 9, 0 ], "prépa pain" = [ 12, 0 ], "Pépinière" = [ 9, 0 ], "pain ou administratif" = [ 5, 30 ], "pain" = [ 5, 30 ], "récoltes Marchés" = [ 8, 30 ], "récolte [MB] + M" = [ 8, 30 ], "betteraves" = [ 8, 30 ], "chargement Mbio" = [ 8, 30 ], "chargement Mpon" = [ 9, 0 ], "crgt Mpon et rocabey" = [ 9, 0 ], "marché bio [Mbio]" = [ 14, 45 ], "retour Mbio administratif" = [ 14, 45 ], "retour Mbio" = [ 14, 45 ], "marché pontorson [Mpon]" = [ 6, 30 ], "marché pontorson (Mpon)" = [ 6, 30 ], "Déchargement [Mpon]" = [ 14, 30 ], "Déchargement Mbio" = [ 9, 0 ], "récolte Mroc et amap" = [ 9, 0 ], "chargement Mroc + com" = [ 14, 30 ], "chargement amap" = [ 9, 0 ], "amap" = [ 17, 0 ], "marché Rocabey [Mroc]" = [ 5, 15 ], "marché Rocabey (Mroc)" = [ 5, 15 ], "Déchargement amap" = [ 9, 0 ], "[récolte] divers" = [ 9, 0 ], "récolte Mferme + Mroc" = [ 8, 30 ], "prépa yourte" = [ 8, 30 ], "Préparation marché Rocabey samedi" = [ 8, 30 ], "marché à la ferme [Mroc]" = [ 16,30 ], "chargement Mroc" = [ 8, 30 ], "marché Rocabey" = [ 5, 15 ], "Aller, chrgt, retour Mroc et déchargement " = [ 5, 15] }
+
+[people]
+colors = { 'Alexis' = "blue", 'Christophe' = "green", 'Lalo' = "red", 'Marie' = "fuchsia", 'Mathieu M' = "purple", 'Mylène' = "yellow", 'Mathieu V' = "maroon", 'Jérôme' = "olive", 'Isa' = "lime", 'Seydou' = "navy", 'Léandre' = "teal", 'Clothilde' = "aqua", 'Clément' = "teal", 'Elsa' = "aqua", 'Liam' = "teal", 'Josepha' = "aqua", 'Gwendal' = "teal", "E’ouann" = "aqua", 'Aide 1' = "teal", 'Aide 2' = "aqua" }
