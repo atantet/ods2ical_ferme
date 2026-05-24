@@ -1,7 +1,11 @@
+# Configuration pour ods2ical_christophe.py
+# La normalisation côté script (strip + casefold) rend les libellés
+# tolérants aux différences de casse et d'espaces, donc une seule entrée
+# par opération/personne suffit ici.
+
 [source]
 ods_filepath = "../202605_planing.ods"
 year = 2026
-week_row = 0
 
 [destination]
 ics_root = "../202605_planing"
@@ -12,10 +16,11 @@ timezone = "Europe/Paris"
 version = "2.0"
 
 [events]
-categories = [ "Professionnel" ]
+categories = ["Professionnel"]
 
 [operations]
-start_hours = { "Administratif" = "9:00",  "Préparation marché bio" = "9:00" , "Cultures" = "9:00" , "Préparation boulange" = "12:00" , "Pépinière" = "9:00" , "Pain" = "5:30" , "Récoltes marché bio (1/2) + marché Pont" = "8:30" , "Chargement marché bio (1/2)" = "8:30" , "Chargement marché Pontorson" = "9:00" , " marché bio de Dol" = "14:00" , "Marché de Pontorson" = "6:45" , "Récolte marché Rocabey + AMAP" = "9:00" , "Chargement marché Rocabey jeudi" = "14:30" , "Chargement AMAP" = "9:00" , "AMAP du Bocage" = "17:15" , "Marché du jeudi à Rocabey" = "5:15" , "Récolte marché à la ferme + marché Roc" = "8:30" , "Préparation marché à la ferme" = "12:00" , "Préparation marché Rocabey samedi" = "15:00" , "Vente à la ferme" = "16:30" , "Chargement marché Rocabey samedi" = "19:30" , "Marché du samedi à Rocabey" = "5:15" }
+start_hours = { "Administratif" = "9:00", "Préparation marché bio" = "9:00", "Cultures" = "9:00", "Préparation boulange" = "12:00", "Pépinière" = "9:00", "Pain" = "5:30", "Récoltes marché bio (1/2) + marché Pont" = "8:30", "Chargement marché bio (1/2)" = "8:30", "Chargement marché Pontorson" = "9:00", "Marché bio de Dol" = "14:00", "Marché de Pontorson" = "6:45", "Récolte marché Rocabey + AMAP" = "9:00", "Chargement marché Rocabey jeudi" = "14:30", "Chargement AMAP" = "9:00", "AMAP du Bocage" = "17:15", "Marché du jeudi à Rocabey" = "5:15", "Récolte marché à la ferme + marché Roc" = "8:30", "Préparation marché à la ferme" = "12:00", "Préparation marché Rocabey samedi" = "15:00", "Vente à la ferme" = "16:30", "Chargement marché Rocabey samedi" = "19:30", "Marché du samedi à Rocabey" = "5:15" }
 
 [people]
-colors = { 'Alexis' = "blue", 'Christophe' = "green", 'Lalo' = "red", 'Marie' = "fuchsia", 'Mathieu M' = "purple", 'Mylène' = "yellow", 'Mathieu V' = "maroon", 'Jérôme' = "olive", 'Isabelle' = "lime", 'Seydou' = "navy", 'Aide 1' = "teal", 'Aide 2' = "aqua" }
+# Note : 'Matthieu M' avec deux 't', comme dans le tableur.
+colors = { "Alexis" = "blue", "Christophe" = "green", "Lalo" = "red", "Marie" = "fuchsia", "Matthieu M" = "purple", "Mylène" = "yellow", "Mathieu V" = "maroon", "Jérôme" = "olive", "Isabelle" = "lime", "Seydou" = "navy", "Aide 1" = "teal", "Aide 2" = "aqua" }
