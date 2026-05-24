@@ -1,0 +1,10 @@
+name: ods2ical_ferme
+channels:
+  - conda-forge
+dependencies:
+  # tomllib (stdlib) requiert Python ≥ 3.11
+  - python>=3.11
+  - pandas
+  - numpy
+  - odfpy        # backend de pd.read_excel pour les fichiers .ods
+  - icalendar
