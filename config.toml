@@ -4,11 +4,11 @@
 # par opération/personne suffit ici.
 
 [source]
-ods_filepath = "../202605_planing.ods"
+ods_filepath = "../2026_emploi_du_temps.ods"
 year = 2026
 
 [destination]
-ics_root = "../202605_planing"
+ics_root = "../2026_emploi_du_temps"
 
 [calendar]
 prodid = "-//atantet//ods2ical_christophe/"
