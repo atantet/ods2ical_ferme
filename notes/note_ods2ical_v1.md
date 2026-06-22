@@ -74,6 +74,34 @@ Pour chaque (personne, semaine), la somme des durées d'événements ICS
 dans le fichier source, son `.ics` est vide). C'est l'état de référence
 auquel se comparer si une régression est suspectée.
 
+## État après la session du 22/06/2026
+
+Nouveau fichier source : `2026_emploi_du_temps.ods` (renommé depuis
+`emploi_du_temps_prévisionnel modèle Alexis(1).ods`), **semaines 21 à
+30** (10 semaines au lieu de 6). `config.toml` mis à jour :
+`ods_filepath` et `ics_root` pointent désormais sur
+`../2026_emploi_du_temps[.ods]`.
+
+**Aucune modification du script n'a été nécessaire** : la structure
+interne des feuilles de semaine est identique à l'ancien fichier (col 0 =
+jour fusionné, col 1 = n° semaine / jour du mois, col 2 = opération, 12
+colonnes personnes, `TOTAL`, `TOTAL Jour`). Le nouveau fichier ajoute des
+onglets de synthèse (`CONSTANTES GLOBALES`, `Définition des débouchés`,
+`Par jour`, `Par personne`, `Par atelier`, `Coûts de commercialisation`)
+qui sont tous ignorés par le filtre `Semaine <entier>`. À noter : une
+feuille s'appelle `semaine 21` en minuscule — gérée car le filtre
+abaisse la casse.
+
+### Validation effectuée
+
+Même méthodo qu'au 24/05 : pour chaque (personne, semaine), somme des
+durées ICS == somme de la colonne tableur. **120 contrôles (12 personnes
+× 10 semaines), tous OK. 317 événements** au total. Marie reste à 0
+partout (ICS vide, 86 octets). C'est le nouvel état de référence.
+
+Le dossier de notes a été renommé `IA/` → `notes/` pour coller à la
+convention des autres projets de `~/projets/`.
+
 ## Format du fichier ODS — choses à savoir
 
 La structure attendue (et tolérée) est documentée dans le README. Points
