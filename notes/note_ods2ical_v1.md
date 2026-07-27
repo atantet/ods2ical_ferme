@@ -102,6 +102,26 @@ partout (ICS vide, 86 octets). C'est le nouvel état de référence.
 Le dossier de notes a été renommé `IA/` → `notes/` pour coller à la
 convention des autres projets de `~/projets/`.
 
+## État après la session du 27/07/2026
+
+Nouveau fichier source : `2026_emploi_du_temps_S35.ods`, **semaines 21 à
+42** (22 semaines au lieu de 10). `config.toml` mis à jour :
+`ods_filepath` pointe désormais sur `../2026_emploi_du_temps_S35.ods`
+(`ics_root` inchangé, toujours `../2026_emploi_du_temps`, donc les noms de
+fichiers `.ics` de sortie ne changent pas).
+
+**Aucune modification du script n'a été nécessaire** : mêmes onglets de
+synthèse ignorés qu'avant, plus quelques feuilles `Feuille31..37` vides
+également filtrées. Aucun `KeyError` (personne/opération) ni avertissement
+« Attention » (désaccord semaine header/nom d'onglet) sur ce fichier.
+
+### Validation effectuée
+
+Même méthodo que le 24/05 et le 22/06 : pour chaque (personne, semaine),
+somme des durées ICS == somme de la colonne tableur. **264 contrôles (12
+personnes × 22 semaines), tous OK. 696 événements** au total. C'est le
+nouvel état de référence.
+
 ## Format du fichier ODS — choses à savoir
 
 La structure attendue (et tolérée) est documentée dans le README. Points
@@ -144,7 +164,8 @@ qui ne sont **pas** évidents à la lecture du script :
 4. **Année ISO incohérente**. `config.toml` fixe `year = 2026`. Si le
    tableur contient des semaines en chevauchement d'année (semaine 1 ou
    52/53), la cohérence ISO doit être vérifiée. Pour l'instant non
-   pertinent (le fichier ne contient que les semaines 21-26).
+   pertinent (le fichier ne contient que les semaines 21-42, session du
+   27/07/2026).
 
 5. **Encodage du nom de personne dans le nom de fichier ICS**. Le script
    écrit `202605_planing_Aide 1.ics` (avec espace) et

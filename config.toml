@@ -4,7 +4,7 @@
 # par opération/personne suffit ici.
 
 [source]
-ods_filepath = "../2026_emploi_du_temps.ods"
+ods_filepath = "../2026_emploi_du_temps_S35.ods"
 year = 2026
 
 [destination]
